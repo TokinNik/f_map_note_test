@@ -9,11 +9,43 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
+class MarkerListItem extends StatelessWidget {
+  final LatLng target;
+  final String name;
+  final String description;
+  final Function(LatLng target) onTap;
+
+  MarkerListItem({this.name, this.description, this.target, this.onTap});
+
+  @override
+  Widget build(BuildContext context){
+    return GestureDetector(
+      onTap: () {
+        onTap(target);
+      },
+        child: Container(
+        height: 40,
+        margin: EdgeInsets.all(8),
+        color: Colors.orange,
+        child: Center(
+          child: Column(
+           children: [
+             Text(name),
+             Text(description),
+           ],
+         ),
+        ),
+      )
+    );
+  }
+}
+
 class _MapScreenState extends State<MapScreen> {
 
   Completer<GoogleMapController> _controller = Completer();
 
   final Set<Marker> _markers = {};
+  List<MarkerListItem> markersItems = List<MarkerListItem>();
 
   bool markersOffstage = true;
 
@@ -21,6 +53,11 @@ class _MapScreenState extends State<MapScreen> {
     target: LatLng(59.945933, 30.320045),
     zoom: 10,
   );
+
+  Future<void> _goToTheMarker(LatLng target) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: target, zoom: 10)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,66 +83,31 @@ class _MapScreenState extends State<MapScreen> {
                               icon: BitmapDescriptor.defaultMarker
                           )
                       );
+                      markersItems.add(new MarkerListItem(
+                        name: 'lat:${num.parse(target.latitude.toStringAsFixed(4))};lng:${num.parse(target.longitude.toStringAsFixed(4))}',
+                        description: "descr",
+                        target: target,
+                        onTap: (target) {
+                          setState(() {
+                            markersOffstage = true;
+                            _goToTheMarker(target);
+                          });
+                        },
+                      ));
                     });
                   }),
           Offstage(
             offstage: markersOffstage,
             child: Container(
               color: Colors.white,
-              child: ListView(
+              padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
+              child: ListView.builder(
                 padding: const EdgeInsets.all(8),
-                children: [
-                  Container(
-                    height: 30,
-                    color: Colors.black12,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black26,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black38,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black45,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black54,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black87,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                  Container(
-                    height: 30,
-                    color: Colors.black12,
-                    child: Center(
-                      child: Text('123'),
-                    ),
-                  ),
-                ],
-
+                itemCount: markersItems.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return markersItems[index];
+                },
+                //children: markersItems.isEmpty ? [Container()] : markersItems,
               ),
             )
           )
@@ -113,16 +115,16 @@ class _MapScreenState extends State<MapScreen> {
       ),
     bottomNavigationBar: BottomNavigationBar(
     items: [
-    BottomNavigationBarItem(
-    icon: new Icon(Icons.map_outlined),
-    label: "Map"
-    ),
-    BottomNavigationBarItem(
-    icon: new Icon(Icons.add_location),
-                label: "Markers"
-            )
-          ],
-        currentIndex: 0,
+      BottomNavigationBarItem(
+          icon: new Icon(Icons.map_outlined),
+          label: "Map"
+      ),
+      BottomNavigationBarItem(
+          icon: new Icon(Icons.add_location),
+          label: "Markers"
+      )
+    ],
+        currentIndex: markersOffstage ? 0 : 1,
         onTap: (int index){
       setState(() {
         if(index == 0) {
