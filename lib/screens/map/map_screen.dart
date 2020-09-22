@@ -59,6 +59,88 @@ class _MapScreenState extends State<MapScreen> {
     controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: target, zoom: 10)));
   }
 
+  void _showAddMarkerDialog(LatLng target) {
+
+    String name = 'Marker';
+    String description = 'description';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add new marker'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  onChanged: (value) {
+                    name = value;
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Marker name',
+                  ),
+                ),
+                Spacer(),
+                TextField(
+                  onChanged: (value) {
+                    description = value;
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Marker description',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Approve'),
+              onPressed: () {
+                addMarker(target, name, description);
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void addMarker(LatLng target, String name, String description) {
+    setState(() {
+      _markers.add(
+          Marker(
+              markerId: MarkerId(target.toString()),
+              position: target,
+              infoWindow: InfoWindow(
+                title: name
+              ),
+              icon: BitmapDescriptor.defaultMarker
+          )
+      );
+      markersItems.add(new MarkerListItem(
+        name: name,
+        description: description,
+        target: target,
+        onTap: (target) {
+          setState(() {
+            markersOffstage = true;
+            _goToTheMarker(target);
+          });
+        },
+      ));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -72,29 +154,7 @@ class _MapScreenState extends State<MapScreen> {
                     _controller.complete(controller);
                   },
                   onTap: (LatLng target) {
-                    setState(() {
-                      _markers.add(
-                          Marker(
-                              markerId: MarkerId(target.toString()),
-                              position: target,
-                              infoWindow: InfoWindow(
-                                title: "lat:${num.parse(target.latitude.toStringAsFixed(4))};lng:${num.parse(target.longitude.toStringAsFixed(4))}",
-                              ),
-                              icon: BitmapDescriptor.defaultMarker
-                          )
-                      );
-                      markersItems.add(new MarkerListItem(
-                        name: 'lat:${num.parse(target.latitude.toStringAsFixed(4))};lng:${num.parse(target.longitude.toStringAsFixed(4))}',
-                        description: "descr",
-                        target: target,
-                        onTap: (target) {
-                          setState(() {
-                            markersOffstage = true;
-                            _goToTheMarker(target);
-                          });
-                        },
-                      ));
-                    });
+                    _showAddMarkerDialog(target);
                   }),
           Offstage(
             offstage: markersOffstage,
