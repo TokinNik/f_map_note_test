@@ -4,6 +4,7 @@ import 'package:f_map_note_test/blocs/map/map_bloc.dart';
 import 'package:f_map_note_test/db/database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/scheduler.dart';
@@ -58,11 +59,14 @@ class MapScreen extends StatelessWidget {
                     _showAddMarkerDialog(target, context, mapBloc);
                   }),
               Offstage(
-                offstage: !mapBloc.markerListVisibility,
+                offstage: !mapBloc.markerListVisibility, //todo norm?
                 child: markersData == null
                     ? Container(
                         color: Colors.white,
-                        child: Center(child: CircularProgressIndicator()))
+                        child: Center(
+                            child: Text("No one Marker here")
+                        )
+                )// Center(child: CircularProgressIndicator()))
                     : Container(
                         color: Colors.white,
                         padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
@@ -78,6 +82,15 @@ class MapScreen extends StatelessWidget {
                       ),
               ),
             ],
+          ),
+          floatingActionButton: Offstage(
+            offstage: !mapBloc.markerListVisibility, //todo norm?
+            child: FloatingActionButton(
+              onPressed: () {
+                _showAddMarkerDialog(null, context, mapBloc);
+              },
+              child: Icon(Icons.add),
+            ),
           ),
           bottomNavigationBar: BottomNavigationBar(
             items: [
@@ -121,23 +134,34 @@ class MapScreen extends StatelessWidget {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                TextField(
-                  onChanged: (value) {
-                    name = value;
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Marker name',
+                Padding(
+                  padding: EdgeInsets.all(4),
+                  child: TextField(
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(30),
+                    ],
+                    onChanged: (value) {
+                      name = value;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Marker name',
+                    ),
                   ),
                 ),
-                Spacer(flex: 1),
-                TextField(
-                  onChanged: (value) {
-                    description = value;
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Marker description',
+                Padding(
+                  padding: EdgeInsets.all(4),
+                  child: TextField(
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(30),
+                    ],
+                    onChanged: (value) {
+                      description = value;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Marker description',
+                    ),
                   ),
                 ),
               ],
@@ -148,9 +172,9 @@ class MapScreen extends StatelessWidget {
               child: Text('Approve'),
               onPressed: () {
                 MarkerData markerData = MarkerData(
-                    id: target.toString(),
                     name: name,
                     description: description,
+                    hasMarker: target != null,
                     target: target,
                     time: "00");
                 _markers.add(Marker(
@@ -174,19 +198,25 @@ class MapScreen extends StatelessWidget {
     );
   }
 
-  void addMarker(MarkerData markerData, MapBloc mapBloc) {
+  Marker addMapMarker(MarkerData markerData, MapBloc mapBloc) {
     Marker marker = Marker(
         markerId: MarkerId(markerData.target.toString()),
         position: markerData.target,
         infoWindow: InfoWindow(title: markerData.name),
         icon: BitmapDescriptor.defaultMarker);
     _markers.add(marker);
+    return marker;
+  }
+
+  void addMarker(MarkerData markerData, MapBloc mapBloc) {
     markersItems.add(new MarkerListItem(
-      mapMarker: marker,
+      mapMarker: markerData.hasMarker ? addMapMarker(markerData, mapBloc) : null,
       markerData: markerData,
       onTapGoTo: (target) {
-        _goToTheMarker(target);
-        mapBloc.add(MarkerListHidedEvent());
+        if (markerData.target != null) {
+          _goToTheMarker(target);
+          mapBloc.add(MarkerListHidedEvent());
+        }
       },
       onTapDelete: (item) {
         _markers.remove(item.mapMarker);
@@ -202,7 +232,6 @@ class MarkerListItem extends StatelessWidget {
   final Marker mapMarker;
   final Function(LatLng target) onTapGoTo;
   final Function(MarkerListItem item) onTapDelete;
-  MaterialColor bgColor = Colors.orange;
 
   MarkerListItem(
       {this.markerData, this.onTapGoTo, this.onTapDelete, this.mapMarker});
@@ -211,26 +240,47 @@ class MarkerListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          onTapGoTo(markerData.target);
+          //todo expand all info
         },
         child: Container(
           height: 50,
           margin: EdgeInsets.all(8),
-          color: bgColor,
+          color: Colors.orange,
           child: Center(
             child: Row(
               children: [
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Column(
+                    children: [
+                      Text(markerData.name),
+                      Text(markerData.description),
+                    ],
+                  ),
+                ),
+                Spacer(
+                  flex: 10,
+                ),
                 Column(
                   children: [
-                    Text(markerData.name),
-                    Text(markerData.description),
+                    Offstage(
+                      offstage: !markerData.hasMarker,
+                      child: FlatButton(
+                          onPressed: () {
+                            onTapGoTo(markerData.target);
+                          },
+                          padding: EdgeInsets.all(0.0),
+                          child: Icon(Icons.my_location)),
+                    ),
                   ],
+                ),
+                Spacer(
+                  flex: 1,
                 ),
                 Column(
                   children: [
                     FlatButton(
                         onPressed: () {
-                          bgColor = Colors.deepOrange;
                           onTapDelete(this);
                         },
                         padding: EdgeInsets.all(0.0),

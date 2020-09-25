@@ -15,11 +15,11 @@ class MarkerAddedEvent extends MapEvent {
 }
 
 class MarkerDeletedEvent extends MapEvent {
-  final String markerId;
+  final int markerId;
 
   MarkerDeletedEvent(this.markerId);
 
-  String get value => markerId;
+  int get value => markerId;
 
   @override
   String toString() => 'MarkerDeleted { markerId: $markerId }';
