@@ -9,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'marker_list_item.dart';
+
 class MapScreen extends StatelessWidget {
   Completer<GoogleMapController> _controller = Completer();
 
@@ -153,7 +155,7 @@ class MapScreen extends StatelessWidget {
                   padding: EdgeInsets.all(4),
                   child: TextField(
                     inputFormatters: [
-                      LengthLimitingTextInputFormatter(30),
+                      LengthLimitingTextInputFormatter(300),
                     ],
                     onChanged: (value) {
                       description = value;
@@ -224,72 +226,5 @@ class MapScreen extends StatelessWidget {
         mapBloc.add(MarkerDeletedEvent(markerData.id));
       },
     ));
-  }
-}
-
-class MarkerListItem extends StatelessWidget {
-  final MarkerData markerData;
-  final Marker mapMarker;
-  final Function(LatLng target) onTapGoTo;
-  final Function(MarkerListItem item) onTapDelete;
-
-  MarkerListItem(
-      {this.markerData, this.onTapGoTo, this.onTapDelete, this.mapMarker});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: () {
-          //todo expand all info
-        },
-        child: Container(
-          height: 50,
-          margin: EdgeInsets.all(8),
-          color: Colors.orange,
-          child: Center(
-            child: Row(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Column(
-                    children: [
-                      Text(markerData.name),
-                      Text(markerData.description),
-                    ],
-                  ),
-                ),
-                Spacer(
-                  flex: 10,
-                ),
-                Column(
-                  children: [
-                    Offstage(
-                      offstage: !markerData.hasMarker,
-                      child: FlatButton(
-                          onPressed: () {
-                            onTapGoTo(markerData.target);
-                          },
-                          padding: EdgeInsets.all(0.0),
-                          child: Icon(Icons.my_location)),
-                    ),
-                  ],
-                ),
-                Spacer(
-                  flex: 1,
-                ),
-                Column(
-                  children: [
-                    FlatButton(
-                        onPressed: () {
-                          onTapDelete(this);
-                        },
-                        padding: EdgeInsets.all(0.0),
-                        child: Icon(Icons.delete)),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ));
   }
 }
