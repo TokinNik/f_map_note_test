@@ -6,9 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/scheduler.dart';
-
+import 'package:intl/intl.dart';
 import 'marker_list_item.dart';
 
 class MapScreen extends StatelessWidget {
@@ -24,13 +24,6 @@ class MapScreen extends StatelessWidget {
     target: LatLng(59.945933, 30.320045),
     zoom: 10,
   );
-
-  /*if (state is MapMarkerLoadInProgressState) {
-  return Container(
-  color: Colors.white,
-  child: Center(child: CircularProgressIndicator()));
-  } else if (state is MapMarkerLoadSuccessState) {
-  final markersData = state.value;*/
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +59,8 @@ class MapScreen extends StatelessWidget {
                     ? Container(
                         color: Colors.white,
                         child: Center(
-                            child: Text("No one Marker here")
-                        )
-                )// Center(child: CircularProgressIndicator()))
+                            child: Text(
+                                "No one Marker here"))) // Center(child: CircularProgressIndicator()))
                     : Container(
                         color: Colors.white,
                         padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
@@ -126,6 +118,8 @@ class MapScreen extends StatelessWidget {
       LatLng target, BuildContext context, MapBloc mapBloc) {
     String name = 'Marker';
     String description = 'description';
+    DateTime time = DateTime.now().add(Duration(hours: 1));
+    DateFormat dateFormat = DateFormat("HH:mm - dd.MM.yyyy");
 
     showDialog(
       context: context,
@@ -133,41 +127,60 @@ class MapScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Add new marker'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(4),
-                  child: TextField(
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(30),
-                    ],
-                    onChanged: (value) {
-                      name = value;
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Marker name',
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(4),
+                      child: TextField(
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(30),
+                        ],
+                        onChanged: (value) {
+                          name = value;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Marker name',
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(4),
-                  child: TextField(
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(300),
-                    ],
-                    onChanged: (value) {
-                      description = value;
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Marker description',
+                    Padding(
+                      padding: EdgeInsets.all(4),
+                      child: TextField(
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(300),
+                        ],
+                        onChanged: (value) {
+                          description = value;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Marker description',
+                        ),
+                      ),
                     ),
-                  ),
+                    Text('Alarm time: ${dateFormat.format(time)}'),
+                    FlatButton(
+                      onPressed: () {
+                        DatePicker.showDateTimePicker(
+                          context,
+                          showTitleActions: true,
+                          minTime: DateTime.now(),
+                          onConfirm: (date) {
+                            setState((){time = date;});
+                          },
+                          currentTime: DateTime.now().add(Duration(hours: 1)),//todo if 'time' -> not work fine
+                        );
+                      },
+                      child: Text("Set Time"),
+                    )
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           actions: <Widget>[
             FlatButton(
@@ -178,7 +191,7 @@ class MapScreen extends StatelessWidget {
                     description: description,
                     hasMarker: target != null,
                     target: target,
-                    time: "00");
+                    time: time);
                 _markers.add(Marker(
                     markerId: MarkerId(markerData.target.toString()),
                     position: markerData.target,
@@ -212,7 +225,8 @@ class MapScreen extends StatelessWidget {
 
   void addMarker(MarkerData markerData, MapBloc mapBloc) {
     markersItems.add(new MarkerListItem(
-      mapMarker: markerData.hasMarker ? addMapMarker(markerData, mapBloc) : null,
+      mapMarker:
+          markerData.hasMarker ? addMapMarker(markerData, mapBloc) : null,
       markerData: markerData,
       onTapGoTo: (target) {
         if (markerData.target != null) {

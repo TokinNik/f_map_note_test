@@ -1,7 +1,9 @@
 import 'package:f_map_note_test/db/database.dart';
+import 'package:f_map_note_test/utils/notification_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class MarkerListItem extends StatefulWidget {
   final MarkerData markerData;
@@ -17,6 +19,8 @@ class MarkerListItem extends StatefulWidget {
 }
 
 class _MarkerListItemState extends State<MarkerListItem> {
+  final DateFormat dateFormat = DateFormat("HH:mm - dd.MM.yyyy");
+
   bool bodyOffstage = true;
 
   @override
@@ -41,6 +45,7 @@ class _MarkerListItemState extends State<MarkerListItem> {
                     child: Column(
                       children: [
                         Text(widget.markerData.name),
+                        Text(dateFormat.format(widget.markerData.time)),
                       ],
                     ),
                   ),
@@ -67,6 +72,7 @@ class _MarkerListItemState extends State<MarkerListItem> {
                     children: [
                       FlatButton(
                           onPressed: () {
+                            NotificationManager.notificationManager.cancelNotification(widget.markerData.id);
                             widget.onTapDelete(widget);
                           },
                           padding: EdgeInsets.all(0.0),

@@ -65,7 +65,7 @@ class MarkersDB {
           description: maps[i]['description'],
           hasMarker: maps[i]['has_marker'] == 1,
           target: maps[i]['has_marker'] == 1 ? LatLng(maps[i]['target_lat'], maps[i]['target_lng']) : null,
-          time: maps[i]['time']
+          time: DateTime.parse(maps[i]['time'])
       );
     });
   }
@@ -91,7 +91,7 @@ class MarkerData {
   final String description;
   final bool hasMarker;
   final LatLng target;
-  final String time;
+  final DateTime time;
 
   MarkerData({this.id, this.name, this.description, this.hasMarker = false, this.target, this.time});
 
@@ -103,7 +103,7 @@ class MarkerData {
       'has_marker': hasMarker ? 1 : 0,
       'target_lat': hasMarker ? target.latitude : 0,
       'target_lng': hasMarker ? target.longitude : 0,
-      'time': time,
+      'time': time.toString(),
     };
   }
 }

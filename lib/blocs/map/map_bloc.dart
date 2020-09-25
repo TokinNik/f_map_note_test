@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:f_map_note_test/db/database.dart';
+import 'package:f_map_note_test/utils/notification_manager.dart';
 import 'package:meta/meta.dart';
 
 part 'map_event.dart';
@@ -49,10 +50,13 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (state is MapMarkerLoadSuccessState) {
       await MarkersDB.db.insertMarker(event.markerData);
       try {
-        markersData = await MarkersDB.db.getAllMarkers();
+        markersData = await MarkersDB.db.getAllMarkers().then((value) async {
+          await NotificationManager.notificationManager.scheduleNotification(value.last);
+        });
         yield MapMarkerLoadSuccessState(markersData);
       }
-      catch (_) {
+      catch (e) {
+        print("________________$e");
         yield MapMarkerLoadFail();
       }
     }
@@ -65,7 +69,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         markersData = await MarkersDB.db.getAllMarkers();
         yield MapMarkerLoadSuccessState(markersData);
       }
-      catch (_) {
+      catch (e) {
+        print("________________$e");
         yield MapMarkerLoadFail();
       }
     }
@@ -76,7 +81,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       markersData = await MarkersDB.db.getAllMarkers();
       yield MapMarkerLoadSuccessState(markersData);
     }
-    catch (_) {
+    catch (e) {
+      print("________________$e");
       yield MapMarkerLoadFail();
     }
   }
