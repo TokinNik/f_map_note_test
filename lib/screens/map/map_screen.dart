@@ -54,13 +54,11 @@ class MapScreen extends StatelessWidget {
                     _showAddMarkerDialog(target, context, mapBloc);
                   }),
               Offstage(
-                offstage: !mapBloc.markerListVisibility, //todo norm?
+                offstage: !mapBloc.markerListVisibility,
                 child: markersData == null
                     ? Container(
                         color: Colors.white,
-                        child: Center(
-                            child: Text(
-                                "No one Marker here"))) // Center(child: CircularProgressIndicator()))
+                        child: Center(child: Text("No one Marker here")))
                     : Container(
                         color: Colors.white,
                         padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
@@ -68,17 +66,16 @@ class MapScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(8),
                           itemCount: markersData.length,
                           itemBuilder: (BuildContext context, int index) {
-                            addMarker(markersData[index], mapBloc);
+                            _addMarker(markersData[index], mapBloc);
                             return markersItems.last;
                           },
-                          //children: markersItems.isEmpty ? [Container()] : markersItems,
                         ),
                       ),
               ),
             ],
           ),
           floatingActionButton: Offstage(
-            offstage: !mapBloc.markerListVisibility, //todo norm?
+            offstage: !mapBloc.markerListVisibility,
             child: FloatingActionButton(
               onPressed: () {
                 _showAddMarkerDialog(null, context, mapBloc);
@@ -97,7 +94,6 @@ class MapScreen extends StatelessWidget {
             onTap: (int index) {
               if (index == 0) {
                 mapBloc.add(MarkerListHidedEvent());
-                //Navigator.of(context).pushReplacementNamed('/Markers');
               } else {
                 mapBloc.add(MarkerListShovedEvent());
               }
@@ -170,9 +166,11 @@ class MapScreen extends StatelessWidget {
                           showTitleActions: true,
                           minTime: DateTime.now(),
                           onConfirm: (date) {
-                            setState((){time = date;});
+                            setState(() {
+                              time = date;
+                            });
                           },
-                          currentTime: DateTime.now().add(Duration(hours: 1)),//todo if 'time' -> not work fine
+                          currentTime: DateTime.now().add(Duration(hours: 1)),
                         );
                       },
                       child: Text("Set Time"),
@@ -213,7 +211,7 @@ class MapScreen extends StatelessWidget {
     );
   }
 
-  Marker addMapMarker(MarkerData markerData, MapBloc mapBloc) {
+  Marker _addMapMarker(MarkerData markerData, MapBloc mapBloc) {
     Marker marker = Marker(
         markerId: MarkerId(markerData.target.toString()),
         position: markerData.target,
@@ -223,10 +221,10 @@ class MapScreen extends StatelessWidget {
     return marker;
   }
 
-  void addMarker(MarkerData markerData, MapBloc mapBloc) {
+  void _addMarker(MarkerData markerData, MapBloc mapBloc) {
     markersItems.add(new MarkerListItem(
       mapMarker:
-          markerData.hasMarker ? addMapMarker(markerData, mapBloc) : null,
+          markerData.hasMarker ? _addMapMarker(markerData, mapBloc) : null,
       markerData: markerData,
       onTapGoTo: (target) {
         if (markerData.target != null) {

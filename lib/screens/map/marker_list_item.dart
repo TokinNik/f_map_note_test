@@ -72,7 +72,8 @@ class _MarkerListItemState extends State<MarkerListItem> {
                     children: [
                       FlatButton(
                           onPressed: () {
-                            NotificationManager.notificationManager.cancelNotification(widget.markerData.id);
+                            NotificationManager.notificationManager
+                                .cancelNotification(widget.markerData.id);
                             widget.onTapDelete(widget);
                           },
                           padding: EdgeInsets.all(0.0),
@@ -101,5 +102,5 @@ class _MarkerListItemState extends State<MarkerListItem> {
             ],
           )),
         ));
-  } //123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|
+  }
 }

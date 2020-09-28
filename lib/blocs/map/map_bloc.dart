@@ -56,7 +56,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         yield MapMarkerLoadSuccessState(markersData);
       }
       catch (e) {
-        print("________________$e");
+        //print("________________$e");
         yield MapMarkerLoadFail();
       }
     }
@@ -70,7 +70,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         yield MapMarkerLoadSuccessState(markersData);
       }
       catch (e) {
-        print("________________$e");
+       //print("________________$e");
         yield MapMarkerLoadFail();
       }
     }
@@ -82,7 +82,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       yield MapMarkerLoadSuccessState(markersData);
     }
     catch (e) {
-      print("________________$e");
+      //print("________________$e");
       yield MapMarkerLoadFail();
     }
   }
