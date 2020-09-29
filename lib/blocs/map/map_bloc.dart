@@ -50,8 +50,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (state is MapMarkerLoadSuccessState) {
       await MarkersDB.db.insertMarker(event.markerData);
       try {
-        markersData = await MarkersDB.db.getAllMarkers().then((value) async {
+        await MarkersDB.db.getAllMarkers().then((value) async {
           await NotificationManager.notificationManager.scheduleNotification(value.last);
+          markersData = value;
         });
         yield MapMarkerLoadSuccessState(markersData);
       }
